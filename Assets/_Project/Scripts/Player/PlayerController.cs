@@ -1,9 +1,13 @@
+using _Project.Scripts.ObjScripts;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(Rigidbody2D), typeof(CapsuleCollider2D))]
+namespace _Project.Scripts.Player
+{
+    [RequireComponent(typeof(Rigidbody2D), typeof(CapsuleCollider2D))]
 public class PlayerController : MonoBehaviour
 {
+    private PlayerHealth playerHealth;
     [SerializeField] private float jumpForce = 12f;
     [SerializeField] private int maxJumps = 3;
     
@@ -26,6 +30,7 @@ public class PlayerController : MonoBehaviour
     
     private void Awake()
     {
+        playerHealth = GetComponent<PlayerHealth>();
         rb = GetComponent<Rigidbody2D>();
         playerCollider = GetComponent<CapsuleCollider2D>();
         originalColliderSize = playerCollider.size;
@@ -102,4 +107,25 @@ public class PlayerController : MonoBehaviour
             Gizmos.DrawWireSphere(groundCheckPoint.position, groundCheckRadius);
         }
     }
+    
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.TryGetComponent(out BonusMb bonusMb))
+        {
+            bonusMb.PickUpBonus();
+        }
+
+        EnemyMb enemyMb = other.GetComponent<EnemyMb>();
+
+        if (enemyMb == null)
+        {
+            enemyMb = other.GetComponentInParent<EnemyMb>();
+        }
+
+        if (enemyMb != null)
+        {
+            enemyMb.HitPlayer(playerHealth);
+        }
+    }
+}
 }

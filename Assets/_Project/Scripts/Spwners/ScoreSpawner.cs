@@ -1,33 +1,72 @@
+using _Project.Scripts.ObjScripts;
 using UnityEngine;
 
-public class ScoreSpawner : MonoBehaviour
+namespace _Project.Scripts.Spawners
 {
-    public GameObject scorePointPrefab;
-    private int maxScorePrefab = 3;
-    private int currentScorePrefab;
-
-    private float intervalSpawn = 3f;
-    private float intervalSpawnTimer;
-
-
-    void Update()
+    public class ScoreSpawner : MonoBehaviour
     {
-        if (maxScorePrefab == currentScorePrefab)
-            return;
-        intervalSpawnTimer += Time.deltaTime;
-        if (intervalSpawnTimer <= intervalSpawn)
+        [Header("Prefab")]
+        [SerializeField] private GameObject scorePointPrefab;
+
+        [Header("Spawn Settings")]
+        [SerializeField] private int maxScorePrefab = 3;
+        [SerializeField] private float intervalSpawnGates = 1f;
+
+        private float spawnTimer;
+        private int currentBonusesAlive;
+
+        private void Update()
         {
-            intervalSpawnTimer = 0f;
+            if (scorePointPrefab == null)
+                return;
+
+            if (currentBonusesAlive >= maxScorePrefab)
+                return;
+
+            spawnTimer += Time.deltaTime;
+
+            if (spawnTimer < intervalSpawnGates)
+                return;
+
+            spawnTimer = 0f;
+
             SpawnPrefab();
-            Debug.Log("Спавн");
         }
-    }
 
+        private void SpawnPrefab()
+        {
+            GameObject bonusObject = Instantiate(
+                scorePointPrefab,
+                transform.position,
+                Quaternion.identity
+            );
 
+            BonusMb bonusMb = bonusObject.GetComponent<BonusMb>();
 
-    void SpawnPrefab()
-    {
-        Instantiate(scorePointPrefab, transform.position, Quaternion.identity);
-        currentScorePrefab++;
+            if (bonusMb != null)
+            {
+                currentBonusesAlive++;
+                bonusMb.Destroyed += OnBonusDestroyed;
+            }
+            else
+            {
+                Debug.LogWarning("На префабе бонуса нет BonusMb");
+            }
+        }
+
+        private void OnBonusDestroyed(BonusMb bonusMb)
+        {
+            if (bonusMb != null)
+            {
+                bonusMb.Destroyed -= OnBonusDestroyed;
+            }
+
+            currentBonusesAlive--;
+
+            if (currentBonusesAlive < 0)
+            {
+                currentBonusesAlive = 0;
+            }
+        }
     }
 }
