@@ -40,27 +40,48 @@ namespace _Project.Scripts.Game
 
     private void Update()
     {
-        Move(bg1);
-        Move(bg2);
+        float moveSpeed = speed;
 
-        Loop(bg1, bg2);
-        Loop(bg2, bg1);
-    }
-
-    private void Move(Transform bg)
-    {
-        bg.position += Vector3.left * speed * Time.deltaTime;
-    }
-
-    private void Loop(Transform current, Transform other)
-    {
-        if (current.position.x <= -width)
+        if (_Project.Scripts.Game.LevelProgressManager.Instance != null)
         {
-            current.position = new Vector3(
-                other.position.x + width,
-                current.position.y,
-                current.position.z
-            );
+            moveSpeed = _Project.Scripts.Game.LevelProgressManager.Instance.CurrentGameSpeed;
+        }
+
+        Move(bg1, moveSpeed);
+        Move(bg2, moveSpeed);
+
+        Loop(bg1, bg2, moveSpeed);
+        Loop(bg2, bg1, moveSpeed);
+    }
+
+    private void Move(Transform bg, float moveSpeed)
+    {
+        bg.position += Vector3.left * moveSpeed * Time.deltaTime;
+    }
+
+    private void Loop(Transform current, Transform other, float moveSpeed)
+    {
+        if (moveSpeed >= 0f)
+        {
+            if (current.position.x <= -width)
+            {
+                current.position = new Vector3(
+                    other.position.x + width,
+                    current.position.y,
+                    current.position.z
+                );
+            }
+        }
+        else
+        {
+            if (current.position.x >= width)
+            {
+                current.position = new Vector3(
+                    other.position.x - width,
+                    current.position.y,
+                    current.position.z
+                );
+            }
         }
     }
 

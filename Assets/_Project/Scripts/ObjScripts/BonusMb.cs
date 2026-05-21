@@ -8,10 +8,14 @@ namespace _Project.Scripts.ObjScripts
     {
         public event Action<BonusMb> Destroyed;
 
+        [Header("Score")]
         [SerializeField] private int scoreAmount = 1;
+
+        [Header("Lifetime")]
         [SerializeField] private float lifeTime = 10f;
 
         private bool isPickedUp;
+        private bool isDestroyedNotified;
 
         private void Update()
         {
@@ -37,7 +41,8 @@ namespace _Project.Scripts.ObjScripts
 
             if (lifeTime <= 0f)
             {
-                Destroy(gameObject);
+                Debug.Log("Бонус исчез по лайфтайму");
+                DestroyBonus();
             }
         }
 
@@ -45,7 +50,10 @@ namespace _Project.Scripts.ObjScripts
         {
             if (isPickedUp)
                 return;
-
+            
+            if (LevelProgressManager.Instance != null && LevelProgressManager.Instance.IsTransitioning)
+                return;
+            
             isPickedUp = true;
 
             if (LevelProgressManager.Instance != null)
@@ -53,12 +61,29 @@ namespace _Project.Scripts.ObjScripts
                 LevelProgressManager.Instance.AddScore(scoreAmount);
             }
 
+            Debug.Log("Бонус подобран игроком");
+
+            DestroyBonus();
+        }
+
+        private void DestroyBonus()
+        {
+            NotifyDestroyed();
             Destroy(gameObject);
+        }
+
+        private void NotifyDestroyed()
+        {
+            if (isDestroyedNotified)
+                return;
+
+            isDestroyedNotified = true;
+            Destroyed?.Invoke(this);
         }
 
         private void OnDestroy()
         {
-            Destroyed?.Invoke(this);
+            NotifyDestroyed();
         }
     }
 }

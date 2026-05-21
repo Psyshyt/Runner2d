@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -7,31 +8,68 @@ namespace _Project.Scripts.Game
     {
         public static LevelProgressManager Instance { get; private set; }
 
+        [System.Serializable]
+        public class LevelData
+        {
+            [Header("Progress")]
+            public int screwsToComplete = 20;
+
+            [Header("Speed")]
+            public float speedIncreaseOnLevelStart = 0f;
+        }
+
         [Header("UI")]
         [SerializeField] private TMP_Text scoreText;
         [SerializeField] private TMP_Text levelText;
 
-        [Header("Level Settings")]
-        [SerializeField] private int scoreToNextLevel = 10;
-        [SerializeField] private int maxLevel = 5;
-
-        [Header("Speed Settings")]
-        [SerializeField] private float speedIncreasePerLevel = 1f;
+        [Header("Levels")]
+        [SerializeField] private LevelData[] levels;
 
         [Header("Links")]
         [SerializeField] private BackgroundLooper backgroundLooper;
+        [SerializeField] private LevelTransitionUI levelTransitionUI;
 
-        private int currentLevel = 1;
+        [Header("Hit Knockback")]
+        [SerializeField] private float worldKnockbackDuration = 1f;
+        [SerializeField] private float worldKnockbackSpeedMultiplier = 1.5f;
+
+        private int currentLevelIndex;
         private int currentScore;
+
+        private bool isTransitioning;
+        private bool isWorldKnockback;
+        private bool isGameCompleted;
+
+        private Coroutine knockbackCoroutine;
+
+        public int CurrentLevel => currentLevelIndex + 1;
+        public bool IsTransitioning => isTransitioning;
+        
+        public int CurrentScore => currentScore;
+        public int CurrentTargetScore => GetCurrentLevelScrewsNeed();
 
         public float CurrentGameSpeed
         {
             get
             {
-                if (backgroundLooper == null)
-                    return 5f;
+                float speed = 5f;
 
-                return backgroundLooper.CurrentSpeed;
+                if (backgroundLooper != null)
+                {
+                    speed = backgroundLooper.CurrentSpeed;
+                }
+
+                if (isTransitioning || isGameCompleted)
+                {
+                    return 0f;
+                }
+
+                if (isWorldKnockback)
+                {
+                    return -speed * worldKnockbackSpeedMultiplier;
+                }
+
+                return speed;
             }
         }
 
@@ -48,12 +86,12 @@ namespace _Project.Scripts.Game
 
         private void Start()
         {
-            currentLevel = 1;
+            currentLevelIndex = 0;
             currentScore = 0;
 
             if (backgroundLooper != null)
             {
-                backgroundLooper.SetLevelBackground(currentLevel - 1);
+                backgroundLooper.SetLevelBackground(currentLevelIndex);
             }
 
             UpdateUI();
@@ -61,53 +99,154 @@ namespace _Project.Scripts.Game
 
         public void AddScore(int amount)
         {
+            if (isTransitioning || isGameCompleted)
+                return;
+
             if (amount <= 0)
                 return;
 
             currentScore += amount;
 
-            if (currentScore >= scoreToNextLevel)
+            int screwsNeed = GetCurrentLevelScrewsNeed();
+
+            if (currentScore >= screwsNeed)
             {
-                GoToNextLevel();
-                scoreToNextLevel += 20;
+                currentScore = screwsNeed;
+                UpdateUI();
+
+                StartCoroutine(CompleteCurrentLevelRoutine());
+                return;
             }
 
             UpdateUI();
         }
 
-        private void GoToNextLevel()
+        private IEnumerator CompleteCurrentLevelRoutine()
         {
-            currentScore = 0;
+            if (isTransitioning)
+                yield break;
 
-            if (currentLevel >= maxLevel)
+            isTransitioning = true;
+
+            bool isLastLevel = currentLevelIndex >= levels.Length - 1;
+
+            if (isLastLevel)
             {
-                Debug.Log("Максимальный уровень уже достигнут");
-                return;
+                CompleteGame();
+                isTransitioning = false;
+                yield break;
             }
 
-            currentLevel++;
+            int nextLevelIndex = currentLevelIndex + 1;
+            int nextLevelNumber = nextLevelIndex + 1;
 
-            Debug.Log("Переход на уровень: " + currentLevel);
+            if (levelTransitionUI != null)
+            {
+                yield return StartCoroutine(
+                    levelTransitionUI.PlayTransition(
+                        nextLevelNumber,
+                        () => ApplyNextLevel(nextLevelIndex)
+                    )
+                );
+            }
+            else
+            {
+                ApplyNextLevel(nextLevelIndex);
+                yield return new WaitForSeconds(0.5f);
+            }
+
+            isTransitioning = false;
+        }
+
+        private void ApplyNextLevel(int nextLevelIndex)
+        {
+            currentLevelIndex = nextLevelIndex;
+            currentScore = 0;
 
             if (backgroundLooper != null)
             {
-                backgroundLooper.SetLevelBackground(currentLevel - 1);
-                backgroundLooper.IncreaseSpeed(speedIncreasePerLevel);
+                backgroundLooper.SetLevelBackground(currentLevelIndex);
+
+                float speedIncrease = GetCurrentLevelSpeedIncrease();
+
+                if (speedIncrease > 0f)
+                {
+                    backgroundLooper.IncreaseSpeed(speedIncrease);
+                }
             }
 
             UpdateUI();
+
+            Debug.Log("Переход на уровень: " + CurrentLevel);
+        }
+
+        private void CompleteGame()
+        {
+            isGameCompleted = true;
+
+            Debug.Log("Все уровни пройдены");
+
+            // Потом сюда можно добавить экран победы.
+            // Например: WinPanel.SetActive(true);
+        }
+
+        private int GetCurrentLevelScrewsNeed()
+        {
+            if (levels == null || levels.Length == 0)
+                return 10;
+
+            if (currentLevelIndex < 0 || currentLevelIndex >= levels.Length)
+                return 10;
+
+            return levels[currentLevelIndex].screwsToComplete;
+        }
+
+        private float GetCurrentLevelSpeedIncrease()
+        {
+            if (levels == null || levels.Length == 0)
+                return 0f;
+
+            if (currentLevelIndex < 0 || currentLevelIndex >= levels.Length)
+                return 0f;
+
+            return levels[currentLevelIndex].speedIncreaseOnLevelStart;
+        }
+
+        public void StartWorldKnockback()
+        {
+            if (isTransitioning || isGameCompleted)
+                return;
+
+            if (knockbackCoroutine != null)
+            {
+                StopCoroutine(knockbackCoroutine);
+            }
+
+            knockbackCoroutine = StartCoroutine(WorldKnockbackRoutine());
+        }
+
+        private IEnumerator WorldKnockbackRoutine()
+        {
+            isWorldKnockback = true;
+
+            yield return new WaitForSeconds(worldKnockbackDuration);
+
+            isWorldKnockback = false;
+            knockbackCoroutine = null;
         }
 
         private void UpdateUI()
         {
+            int screwsNeed = GetCurrentLevelScrewsNeed();
+
             if (scoreText != null)
             {
-                scoreText.text = currentScore + " / " + scoreToNextLevel;
+                scoreText.text = currentScore + " / " + screwsNeed;
             }
 
             if (levelText != null)
             {
-                levelText.text = "Уровень " + currentLevel;
+                levelText.text = "Уровень " + CurrentLevel;
             }
         }
     }

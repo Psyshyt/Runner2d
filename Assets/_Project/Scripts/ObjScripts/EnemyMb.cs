@@ -1,4 +1,5 @@
 using System;
+using _Project.Scripts.Game;
 using _Project.Scripts.Player;
 using UnityEngine;
 
@@ -8,12 +9,12 @@ namespace _Project.Scripts.ObjScripts
     {
         public event Action<EnemyMb> Destroyed;
 
-        [SerializeField] private float moveSpeed = 5f;
+        [Header("Enemy Settings")]
         [SerializeField] private int damage = 1;
         [SerializeField] private float lifeTime = 10f;
-        [SerializeField] private bool destroyAfterHit = true;
 
         private bool wasHit;
+        private bool isDestroyedNotified;
 
         private void Update()
         {
@@ -23,7 +24,14 @@ namespace _Project.Scripts.ObjScripts
 
         private void Move()
         {
-            transform.position += new Vector3(-moveSpeed * Time.deltaTime, 0f, 0f);
+            float speed = 5f;
+
+            if (LevelProgressManager.Instance != null)
+            {
+                speed = LevelProgressManager.Instance.CurrentGameSpeed;
+            }
+
+            transform.position += new Vector3(-speed * Time.deltaTime, 0f, 0f);
         }
 
         private void LifeTimer()
@@ -32,7 +40,7 @@ namespace _Project.Scripts.ObjScripts
 
             if (lifeTime <= 0f)
             {
-                Destroy(gameObject);
+                DestroyEnemy();
             }
         }
 
@@ -41,22 +49,44 @@ namespace _Project.Scripts.ObjScripts
             if (wasHit)
                 return;
 
+            if (playerHealth == null)
+                return;
+
+            bool damageApplied = playerHealth.TakeDamage(damage);
+
+            if (!damageApplied)
+                return;
+
             wasHit = true;
 
-            if (playerHealth != null)
+            if (LevelProgressManager.Instance != null)
             {
-                playerHealth.TakeDamage(damage);
+                LevelProgressManager.Instance.StartWorldKnockback();
             }
 
-            if (destroyAfterHit)
-            {
-                Destroy(gameObject);
-            }
+            // ВАЖНО:
+            // Здесь больше НЕ уничтожаем врага после столкновения.
+            // Он продолжит движение и исчезнет только по lifeTime.
+        }
+
+        private void DestroyEnemy()
+        {
+            NotifyDestroyed();
+            Destroy(gameObject);
+        }
+
+        private void NotifyDestroyed()
+        {
+            if (isDestroyedNotified)
+                return;
+
+            isDestroyedNotified = true;
+            Destroyed?.Invoke(this);
         }
 
         private void OnDestroy()
         {
-            Destroyed?.Invoke(this);
+            NotifyDestroyed();
         }
     }
 }

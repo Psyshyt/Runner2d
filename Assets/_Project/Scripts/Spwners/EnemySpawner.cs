@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using _Project.Scripts.Game;
 using _Project.Scripts.ObjScripts;
 using UnityEngine;
 
@@ -5,8 +7,20 @@ namespace _Project.Scripts.Spawners
 {
     public class EnemySpawner : MonoBehaviour
     {
+        [System.Serializable]
+        public class EnemySpawnData
+        {
+            public GameObject enemyPrefab;
+
+            [Min(1)]
+            public int unlockLevel = 1;
+
+            [Header("Position")]
+            public float spawnYOffset = 0f;
+        }
+
         [Header("Enemy Prefabs")]
-        [SerializeField] private GameObject[] enemyPrefabs;
+        [SerializeField] private EnemySpawnData[] enemies;
 
         [Header("Spawn Points")]
         [SerializeField] private Transform[] spawnPoints;
@@ -14,17 +28,14 @@ namespace _Project.Scripts.Spawners
         [Header("Spawn Settings")]
         [SerializeField] private float minSpawnInterval = 1.5f;
         [SerializeField] private float maxSpawnInterval = 3f;
-        [SerializeField] private int maxEnemiesAlive = 5;
 
-        [Header("Overlap Check")]
-        [SerializeField] private LayerMask enemyLayer;
-        [SerializeField] private float minDistanceBetweenEnemies = 2f;
-        [SerializeField] private Vector2 checkPadding = new Vector2(0.3f, 0.3f);
-        [SerializeField] private int spawnAttempts = 10;
+        [Header("Only One Enemy")]
+        [SerializeField] private int maxEnemiesOnScene = 1;
+
+        private readonly List<EnemyMb> activeEnemies = new List<EnemyMb>();
 
         private float spawnTimer;
         private float nextSpawnTime;
-        private int currentEnemiesAlive;
 
         private void Start()
         {
@@ -33,13 +44,19 @@ namespace _Project.Scripts.Spawners
 
         private void Update()
         {
-            if (enemyPrefabs == null || enemyPrefabs.Length == 0)
+            CleanupDestroyedEnemies();
+
+            if (LevelProgressManager.Instance != null &&
+                LevelProgressManager.Instance.IsTransitioning)
+                return;
+
+            if (activeEnemies.Count >= maxEnemiesOnScene)
+                return;
+
+            if (enemies == null || enemies.Length == 0)
                 return;
 
             if (spawnPoints == null || spawnPoints.Length == 0)
-                return;
-
-            if (currentEnemiesAlive >= maxEnemiesAlive)
                 return;
 
             spawnTimer += Time.deltaTime;
@@ -50,113 +67,89 @@ namespace _Project.Scripts.Spawners
             spawnTimer = 0f;
             SetNextSpawnTime();
 
-            TrySpawnEnemy();
+            SpawnEnemy();
         }
 
-        private void TrySpawnEnemy()
+        private void SpawnEnemy()
         {
-            for (int i = 0; i < spawnAttempts; i++)
-            {
-                GameObject enemyPrefab = GetRandomEnemyPrefab();
-                Transform spawnPoint = GetRandomSpawnPoint();
+            EnemySpawnData enemyData = GetRandomAvailableEnemyData();
 
-                if (enemyPrefab == null || spawnPoint == null)
+            if (enemyData == null || enemyData.enemyPrefab == null)
+                return;
+
+            Transform spawnPoint = GetRandomSpawnPoint();
+
+            if (spawnPoint == null)
+                return;
+
+            Vector3 spawnPosition = spawnPoint.position;
+            spawnPosition.y += enemyData.spawnYOffset;
+
+            GameObject enemyObject = Instantiate(
+                enemyData.enemyPrefab,
+                spawnPosition,
+                Quaternion.identity
+            );
+
+            EnemyMb enemyMb = enemyObject.GetComponent<EnemyMb>();
+
+            if (enemyMb == null)
+            {
+                enemyMb = enemyObject.GetComponentInChildren<EnemyMb>();
+            }
+
+            if (enemyMb == null)
+            {
+                Debug.LogWarning("На префабе врага нет EnemyMb");
+                Destroy(enemyObject);
+                return;
+            }
+
+            activeEnemies.Add(enemyMb);
+            enemyMb.Destroyed += OnEnemyDestroyed;
+
+            Debug.Log("Враг создан: " + enemyObject.name + ". Активных врагов: " + activeEnemies.Count);
+        }
+
+        private EnemySpawnData GetRandomAvailableEnemyData()
+        {
+            int currentLevel = 1;
+
+            if (LevelProgressManager.Instance != null)
+            {
+                currentLevel = LevelProgressManager.Instance.CurrentLevel;
+            }
+
+            List<EnemySpawnData> availableEnemies = new List<EnemySpawnData>();
+
+            foreach (EnemySpawnData enemyData in enemies)
+            {
+                if (enemyData == null)
                     continue;
 
-                Vector2 spawnPosition = spawnPoint.position;
+                if (enemyData.enemyPrefab == null)
+                    continue;
 
-                if (IsSpawnPlaceFree(enemyPrefab, spawnPosition))
+                if (currentLevel >= enemyData.unlockLevel)
                 {
-                    SpawnEnemy(enemyPrefab, spawnPosition);
-                    return;
+                    availableEnemies.Add(enemyData);
                 }
             }
 
-            Debug.Log("Не удалось найти свободное место для врага");
-        }
-
-        private void SpawnEnemy(GameObject enemyPrefab, Vector2 spawnPosition)
-        {
-            GameObject enemyObject = Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
-
-            if (enemyObject.TryGetComponent(out EnemyMb enemyMb))
+            if (availableEnemies.Count == 0)
             {
-                currentEnemiesAlive++;
-                enemyMb.Destroyed += OnEnemyDestroyed;
-            }
-            else
-            {
-                Debug.LogWarning("На префабе врага нет EnemyMb");
-            }
-        }
-
-        private bool IsSpawnPlaceFree(GameObject enemyPrefab, Vector2 spawnPosition)
-        {
-            Vector2 checkSize = GetPrefabCheckSize(enemyPrefab);
-
-            Collider2D boxHit = Physics2D.OverlapBox(
-                spawnPosition,
-                checkSize,
-                0f,
-                enemyLayer
-            );
-
-            if (boxHit != null)
-                return false;
-
-            Collider2D circleHit = Physics2D.OverlapCircle(
-                spawnPosition,
-                minDistanceBetweenEnemies,
-                enemyLayer
-            );
-
-            if (circleHit != null)
-                return false;
-
-            return true;
-        }
-
-        private Vector2 GetPrefabCheckSize(GameObject prefab)
-        {
-            Collider2D collider = prefab.GetComponentInChildren<Collider2D>();
-
-            if (collider == null)
-            {
-                return Vector2.one + checkPadding;
+                Debug.LogWarning("Нет доступных врагов для уровня: " + currentLevel);
+                return null;
             }
 
-            Vector2 size = Vector2.one;
-
-            if (collider is BoxCollider2D boxCollider)
-            {
-                size = boxCollider.size;
-            }
-            else if (collider is CapsuleCollider2D capsuleCollider)
-            {
-                size = capsuleCollider.size;
-            }
-            else if (collider is CircleCollider2D circleCollider)
-            {
-                float diameter = circleCollider.radius * 2f;
-                size = new Vector2(diameter, diameter);
-            }
-
-            size.x *= Mathf.Abs(collider.transform.lossyScale.x);
-            size.y *= Mathf.Abs(collider.transform.lossyScale.y);
-
-            return size + checkPadding;
-        }
-
-        private GameObject GetRandomEnemyPrefab()
-        {
-            int index = Random.Range(0, enemyPrefabs.Length);
-            return enemyPrefabs[index];
+            int randomIndex = Random.Range(0, availableEnemies.Count);
+            return availableEnemies[randomIndex];
         }
 
         private Transform GetRandomSpawnPoint()
         {
-            int index = Random.Range(0, spawnPoints.Length);
-            return spawnPoints[index];
+            int randomIndex = Random.Range(0, spawnPoints.Length);
+            return spawnPoints[randomIndex];
         }
 
         private void SetNextSpawnTime()
@@ -171,28 +164,14 @@ namespace _Project.Scripts.Spawners
                 enemyMb.Destroyed -= OnEnemyDestroyed;
             }
 
-            currentEnemiesAlive--;
+            activeEnemies.Remove(enemyMb);
 
-            if (currentEnemiesAlive < 0)
-            {
-                currentEnemiesAlive = 0;
-            }
+            Debug.Log("Враг исчез. Активных врагов: " + activeEnemies.Count);
         }
 
-        private void OnDrawGizmosSelected()
+        private void CleanupDestroyedEnemies()
         {
-            if (spawnPoints == null)
-                return;
-
-            Gizmos.color = Color.red;
-
-            foreach (Transform point in spawnPoints)
-            {
-                if (point == null)
-                    continue;
-
-                Gizmos.DrawWireSphere(point.position, minDistanceBetweenEnemies);
-            }
+            activeEnemies.RemoveAll(enemy => enemy == null);
         }
     }
 }

@@ -27,6 +27,10 @@ namespace _Project.Scripts.Spawners
 
             if (spawnTimer < intervalSpawnGates)
                 return;
+            
+            if (_Project.Scripts.Game.LevelProgressManager.Instance != null &&
+                _Project.Scripts.Game.LevelProgressManager.Instance.IsTransitioning)
+                return;
 
             spawnTimer = 0f;
 
