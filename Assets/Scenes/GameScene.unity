@@ -2511,6 +2511,15 @@ MonoBehaviour:
   - enemyPrefab: {fileID: 8604913510312842255, guid: 54860540d75165648917097d284c1a73, type: 3}
     unlockLevel: 1
     spawnYOffset: 1.5
+  - enemyPrefab: {fileID: 8604913510312842255, guid: 9165cb228f9fd904a9dd3093cfd991c9, type: 3}
+    unlockLevel: 1
+    spawnYOffset: 0
+  - enemyPrefab: {fileID: 8604913510312842255, guid: 22ef7b993fb95f746b0b139b5846ef0a, type: 3}
+    unlockLevel: 5
+    spawnYOffset: 1.5
+  - enemyPrefab: {fileID: 8604913510312842255, guid: 0f819ea6fe80280469364dd4bc0d1716, type: 3}
+    unlockLevel: 1
+    spawnYOffset: 2
   spawnPoints:
   - {fileID: 1387537103}
   minSpawnInterval: 1.5

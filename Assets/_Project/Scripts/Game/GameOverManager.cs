@@ -19,7 +19,7 @@ namespace _Project.Scripts.Game
         [SerializeField] private Button menuButton;
 
         [Header("Scenes")]
-        [SerializeField] private string menuSceneName = "";
+        [SerializeField] private string menuSceneName = "MainMenu";
 
         private bool isGameOver;
 
@@ -91,7 +91,7 @@ namespace _Project.Scripts.Game
 
             statsText.text =
                 "Достигнут уровень: " + level + "\n" +
-                "Собрано винтиков: " + score + " / " + targetScore;
+                "Собрано сюрикенов: " + score + " / " + targetScore;
         }
 
         private void RestartGame()

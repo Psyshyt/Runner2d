@@ -1,22 +1,16 @@
 fileFormatVersion: 2
-guid: e0a7648031f3dd249ae04ed93cd2fb73
+guid: 18ed01bb6c5f4f14c96dc64b7c119c6d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5955232323951889890
-    second: IceGun_0
+      213: -4631164972026496763
+    second: "ChatGPT Image 25 \u043C\u0430\u044F 2026 \u0433., 21_07_13_0"
   - first:
-      213: -4975294850086676637
-    second: IceGun_1
+      213: -6146526918258353794
+    second: "ChatGPT Image 25 \u043C\u0430\u044F 2026 \u0433., 21_07_13_1"
   - first:
-      213: -7529966610333120446
-    second: IceGun_2
-  - first:
-      213: 7660401347927672486
-    second: IceGun_3
-  - first:
-      213: 9148578957382371944
-    second: IceGun_4
+      213: 5625699534130788760
+    second: "ChatGPT Image 25 \u043C\u0430\u044F 2026 \u0433., 21_07_13_2"
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -125,111 +119,45 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: IceGun_0
+      name: FrozenLight
       rect:
         serializedVersion: 2
-        x: 11
-        y: 1
-        width: 623
-        height: 1019
+        x: 0
+        y: 1157
+        width: 1011
+        height: 305
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e127ce7e0c3ca5da0800000000000000
-      internalID: -5955232323951889890
+      spriteID: e7995d2655623baa0800000000000000
+      internalID: -6146526918258353794
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: IceGun_1
+      name: FrozenFanBig
       rect:
         serializedVersion: 2
-        x: 162
-        y: 137
-        width: 335
-        height: 315
+        x: 230
+        y: 158
+        width: 593
+        height: 955
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 367d0cfa1b334fab0800000000000000
-      internalID: -4975294850086676637
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: IceGun_2
-      rect:
-        serializedVersion: 2
-        x: 591
-        y: 1
-        width: 455
-        height: 639
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 248ca8c634f208790800000000000000
-      internalID: -7529966610333120446
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: IceGun_3
-      rect:
-        serializedVersion: 2
-        x: 830
-        y: 451
-        width: 563
-        height: 569
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 6a6072c70763f4a60800000000000000
-      internalID: 7660401347927672486
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: IceGun_4
-      rect:
-        serializedVersion: 2
-        x: 1089
-        y: 2
-        width: 367
-        height: 439
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 86ac36a271846fe70800000000000000
-      internalID: 9148578957382371944
+      spriteID: 89932f88bef721e40800000000000000
+      internalID: 5625699534130788760
       vertices: []
       indices: 
       edges: []
@@ -238,7 +166,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 32fa0fe12c25260449ffbf1fc27a2ec1
     internalID: 0
     vertices: []
     indices: 
@@ -248,11 +176,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      IceGun_0: -5955232323951889890
-      IceGun_1: -4975294850086676637
-      IceGun_2: -7529966610333120446
-      IceGun_3: 7660401347927672486
-      IceGun_4: 9148578957382371944
+      1: -4631164972026496763
+      FrozenFanBig: 5625699534130788760
+      FrozenLight: -6146526918258353794
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
