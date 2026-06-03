@@ -1,3 +1,4 @@
+using _Project.Scripts.Game;
 using _Project.Scripts.ObjScripts;
 using UnityEngine;
 
@@ -12,11 +13,19 @@ namespace _Project.Scripts.Spawners
         [SerializeField] private int maxScorePrefab = 3;
         [SerializeField] private float intervalSpawnGates = 1f;
 
+        [Header("Spawn Check")]
+        [SerializeField] private LayerMask blockedSpawnLayers;
+        [SerializeField] private float checkRadius = 1.5f;
+
         private float spawnTimer;
         private int currentBonusesAlive;
 
         private void Update()
         {
+            if (LevelProgressManager.Instance != null &&
+                LevelProgressManager.Instance.IsTransitioning)
+                return;
+
             if (scorePointPrefab == null)
                 return;
 
@@ -27,14 +36,24 @@ namespace _Project.Scripts.Spawners
 
             if (spawnTimer < intervalSpawnGates)
                 return;
-            
-            if (_Project.Scripts.Game.LevelProgressManager.Instance != null &&
-                _Project.Scripts.Game.LevelProgressManager.Instance.IsTransitioning)
-                return;
 
             spawnTimer = 0f;
 
+            if (IsSpawnBlocked())
+                return;
+
             SpawnPrefab();
+        }
+
+        private bool IsSpawnBlocked()
+        {
+            Collider2D hit = Physics2D.OverlapCircle(
+                transform.position,
+                checkRadius,
+                blockedSpawnLayers
+            );
+
+            return hit != null;
         }
 
         private void SpawnPrefab()
@@ -46,6 +65,11 @@ namespace _Project.Scripts.Spawners
             );
 
             BonusMb bonusMb = bonusObject.GetComponent<BonusMb>();
+
+            if (bonusMb == null)
+            {
+                bonusMb = bonusObject.GetComponentInChildren<BonusMb>();
+            }
 
             if (bonusMb != null)
             {
@@ -61,16 +85,18 @@ namespace _Project.Scripts.Spawners
         private void OnBonusDestroyed(BonusMb bonusMb)
         {
             if (bonusMb != null)
-            {
                 bonusMb.Destroyed -= OnBonusDestroyed;
-            }
 
             currentBonusesAlive--;
 
             if (currentBonusesAlive < 0)
-            {
                 currentBonusesAlive = 0;
-            }
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(transform.position, checkRadius);
         }
     }
 }

@@ -2136,9 +2136,9 @@ MonoBehaviour:
   scoreText: {fileID: 318347500}
   levelText: {fileID: 0}
   levels:
-  - screwsToComplete: 1
+  - screwsToComplete: 20
     speedIncreaseOnLevelStart: 0
-  - screwsToComplete: 1
+  - screwsToComplete: 50
     speedIncreaseOnLevelStart: 0
   - screwsToComplete: 50
     speedIncreaseOnLevelStart: 2
@@ -2313,6 +2313,10 @@ MonoBehaviour:
   scorePointPrefab: {fileID: 2953576840779947853, guid: e0f17877d7213a649a50167a5dca300a, type: 3}
   maxScorePrefab: 3
   intervalSpawnGates: 1
+  blockedSpawnLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  checkRadius: 1.5
 --- !u!1 &1743137490
 GameObject:
   m_ObjectHideFlags: 0
@@ -3014,9 +3018,9 @@ MonoBehaviour:
   - enemyPrefab: {fileID: 8604913510312842255, guid: 54860540d75165648917097d284c1a73, type: 3}
     unlockLevel: 1
     spawnYOffset: 1.5
-  - enemyPrefab: {fileID: 8604913510312842255, guid: 9165cb228f9fd904a9dd3093cfd991c9, type: 3}
+  - enemyPrefab: {fileID: 8604913510312842255, guid: b38d4f0ea3f879e4e9e3f960ac83f4b5, type: 3}
     unlockLevel: 1
-    spawnYOffset: 0
+    spawnYOffset: 1.5
   - enemyPrefab: {fileID: 8604913510312842255, guid: 22ef7b993fb95f746b0b139b5846ef0a, type: 3}
     unlockLevel: 5
     spawnYOffset: 1.5
@@ -3028,6 +3032,11 @@ MonoBehaviour:
   minSpawnInterval: 1.5
   maxSpawnInterval: 3
   maxEnemiesOnScene: 2
+  blockedSpawnLayers:
+    serializedVersion: 2
+    m_Bits: 128
+  checkRadius: 2
+  spawnAttempts: 5
 --- !u!1 &2112928367
 GameObject:
   m_ObjectHideFlags: 0

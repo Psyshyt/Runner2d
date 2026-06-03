@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3227627360615027786}
   - component: {fileID: 4943308239672819339}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SledgehammerPrefab (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -101,7 +101,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3234733094915055095}
   - component: {fileID: 2309602757891397432}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SledgehammerPrefab (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -192,7 +192,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4975300350081486019}
   - component: {fileID: 8929341834227663754}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SledgehammerPrefab (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -283,7 +283,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7546860547368047276}
   - component: {fileID: 8815711182130606848}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SledgehammerPrefab (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -374,7 +374,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3125962095326568855}
   - component: {fileID: 8508589195145228100}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SledgehammerPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -465,7 +465,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4735549500752285866}
   - component: {fileID: 1317309970169884768}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SledgehammerPrefab (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -556,7 +556,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5364329201878718882}
   - component: {fileID: 3940859096220465879}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SledgehammerPrefab (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -649,9 +649,9 @@ GameObject:
   - component: {fileID: 4851280778474740259}
   - component: {fileID: 4469883063936055699}
   - component: {fileID: 1101666058186940281}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SledgehammerPrefab
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -808,7 +808,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1164028641683289411}
   - component: {fileID: 2488207582275681249}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SledgehammerPrefab (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

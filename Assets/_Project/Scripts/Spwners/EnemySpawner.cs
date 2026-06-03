@@ -32,6 +32,11 @@ namespace _Project.Scripts.Spawners
         [Header("Only One Enemy")]
         [SerializeField] private int maxEnemiesOnScene = 1;
 
+        [Header("Spawn Check")]
+        [SerializeField] private LayerMask blockedSpawnLayers;
+        [SerializeField] private float checkRadius = 1.8f;
+        [SerializeField] private int spawnAttempts = 5;
+
         private readonly List<EnemyMb> activeEnemies = new List<EnemyMb>();
 
         private float spawnTimer;
@@ -67,24 +72,47 @@ namespace _Project.Scripts.Spawners
             spawnTimer = 0f;
             SetNextSpawnTime();
 
-            SpawnEnemy();
+            TrySpawnEnemy();
         }
 
-        private void SpawnEnemy()
+        private void TrySpawnEnemy()
         {
-            EnemySpawnData enemyData = GetRandomAvailableEnemyData();
+            for (int i = 0; i < spawnAttempts; i++)
+            {
+                EnemySpawnData enemyData = GetRandomAvailableEnemyData();
 
-            if (enemyData == null || enemyData.enemyPrefab == null)
+                if (enemyData == null || enemyData.enemyPrefab == null)
+                    return;
+
+                Transform spawnPoint = GetRandomSpawnPoint();
+
+                if (spawnPoint == null)
+                    return;
+
+                Vector3 spawnPosition = spawnPoint.position;
+                spawnPosition.y += enemyData.spawnYOffset;
+
+                if (IsSpawnBlocked(spawnPosition))
+                    continue;
+
+                SpawnEnemy(enemyData, spawnPosition);
                 return;
+            }
+        }
 
-            Transform spawnPoint = GetRandomSpawnPoint();
+        private bool IsSpawnBlocked(Vector3 spawnPosition)
+        {
+            Collider2D hit = Physics2D.OverlapCircle(
+                spawnPosition,
+                checkRadius,
+                blockedSpawnLayers
+            );
 
-            if (spawnPoint == null)
-                return;
+            return hit != null;
+        }
 
-            Vector3 spawnPosition = spawnPoint.position;
-            spawnPosition.y += enemyData.spawnYOffset;
-
+        private void SpawnEnemy(EnemySpawnData enemyData, Vector3 spawnPosition)
+        {
             GameObject enemyObject = Instantiate(
                 enemyData.enemyPrefab,
                 spawnPosition,
@@ -94,9 +122,7 @@ namespace _Project.Scripts.Spawners
             EnemyMb enemyMb = enemyObject.GetComponent<EnemyMb>();
 
             if (enemyMb == null)
-            {
                 enemyMb = enemyObject.GetComponentInChildren<EnemyMb>();
-            }
 
             if (enemyMb == null)
             {
@@ -107,8 +133,6 @@ namespace _Project.Scripts.Spawners
 
             activeEnemies.Add(enemyMb);
             enemyMb.Destroyed += OnEnemyDestroyed;
-
-            Debug.Log("Враг создан: " + enemyObject.name + ". Активных врагов: " + activeEnemies.Count);
         }
 
         private EnemySpawnData GetRandomAvailableEnemyData()
@@ -116,31 +140,21 @@ namespace _Project.Scripts.Spawners
             int currentLevel = 1;
 
             if (LevelProgressManager.Instance != null)
-            {
                 currentLevel = LevelProgressManager.Instance.CurrentLevel;
-            }
 
             List<EnemySpawnData> availableEnemies = new List<EnemySpawnData>();
 
             foreach (EnemySpawnData enemyData in enemies)
             {
-                if (enemyData == null)
-                    continue;
-
-                if (enemyData.enemyPrefab == null)
+                if (enemyData == null || enemyData.enemyPrefab == null)
                     continue;
 
                 if (currentLevel >= enemyData.unlockLevel)
-                {
                     availableEnemies.Add(enemyData);
-                }
             }
 
             if (availableEnemies.Count == 0)
-            {
-                Debug.LogWarning("Нет доступных врагов для уровня: " + currentLevel);
                 return null;
-            }
 
             int randomIndex = Random.Range(0, availableEnemies.Count);
             return availableEnemies[randomIndex];
@@ -160,18 +174,30 @@ namespace _Project.Scripts.Spawners
         private void OnEnemyDestroyed(EnemyMb enemyMb)
         {
             if (enemyMb != null)
-            {
                 enemyMb.Destroyed -= OnEnemyDestroyed;
-            }
 
             activeEnemies.Remove(enemyMb);
-
-            Debug.Log("Враг исчез. Активных врагов: " + activeEnemies.Count);
         }
 
         private void CleanupDestroyedEnemies()
         {
             activeEnemies.RemoveAll(enemy => enemy == null);
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            if (spawnPoints == null)
+                return;
+
+            Gizmos.color = Color.red;
+
+            foreach (Transform point in spawnPoints)
+            {
+                if (point == null)
+                    continue;
+
+                Gizmos.DrawWireSphere(point.position, checkRadius);
+            }
         }
     }
 }

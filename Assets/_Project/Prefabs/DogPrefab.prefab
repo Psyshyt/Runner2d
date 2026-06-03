@@ -12,9 +12,9 @@ GameObject:
   - component: {fileID: 4851280778474740259}
   - component: {fileID: 1101666058186940281}
   - component: {fileID: 4657619862897406818}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: DogPrefab
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
