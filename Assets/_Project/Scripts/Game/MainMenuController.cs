@@ -5,7 +5,6 @@ namespace _Project.Scripts.Game
 {
     public class MainMenuController : MonoBehaviour
     {
-        [Header("Scenes")]
         [SerializeField] private string gameSceneName = "GameScene";
 
         private void Awake()
@@ -15,13 +14,15 @@ namespace _Project.Scripts.Game
 
         public void StartGame()
         {
-            if (string.IsNullOrEmpty(gameSceneName))
-            {
-                Debug.LogError("Не указано название игровой сцены");
-                return;
-            }
+            PlayerPrefs.SetInt("SelectedLevel", 1);
+            PlayerPrefs.Save();
 
             SceneManager.LoadScene(gameSceneName);
+        }
+
+        public void ExitGame()
+        {
+            Application.Quit();
         }
     }
 }

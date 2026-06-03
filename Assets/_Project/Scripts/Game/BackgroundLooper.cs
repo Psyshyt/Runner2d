@@ -34,8 +34,7 @@ namespace _Project.Scripts.Game
 
         bg1.position = Vector3.zero;
         bg2.position = new Vector3(width, 0f, 0f);
-
-        SetLevelBackground(0);
+        
     }
 
     private void Update()

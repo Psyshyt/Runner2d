@@ -86,7 +86,8 @@ namespace _Project.Scripts.Game
 
         private void Start()
         {
-            currentLevelIndex = 0;
+            int selectedLevel = PlayerPrefs.GetInt("SelectedLevel", 1);
+            currentLevelIndex = Mathf.Clamp(selectedLevel - 1, 0, levels.Length - 1);
             currentScore = 0;
 
             if (backgroundLooper != null)
@@ -160,6 +161,7 @@ namespace _Project.Scripts.Game
 
         private void ApplyNextLevel(int nextLevelIndex)
         {
+            
             currentLevelIndex = nextLevelIndex;
             currentScore = 0;
 
@@ -175,6 +177,7 @@ namespace _Project.Scripts.Game
                 }
             }
 
+            SaveUnlockedLevel(CurrentLevel);
             UpdateUI();
 
             Debug.Log("Переход на уровень: " + CurrentLevel);
@@ -185,9 +188,7 @@ namespace _Project.Scripts.Game
             isGameCompleted = true;
 
             Debug.Log("Все уровни пройдены");
-
-            // Потом сюда можно добавить экран победы.
-            // Например: WinPanel.SetActive(true);
+            
         }
 
         private int GetCurrentLevelScrewsNeed()
@@ -247,6 +248,17 @@ namespace _Project.Scripts.Game
             if (levelText != null)
             {
                 levelText.text = "Уровень " + CurrentLevel;
+            }
+        }
+        
+        private void SaveUnlockedLevel(int level)
+        {
+            int unlockedLevel = PlayerPrefs.GetInt("UnlockedLevel", 1);
+
+            if (level > unlockedLevel)
+            {
+                PlayerPrefs.SetInt("UnlockedLevel", level);
+                PlayerPrefs.Save();
             }
         }
     }
